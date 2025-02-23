@@ -29,7 +29,7 @@ class _ParentAddViewState extends State<ParentAddView> {
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: const Text("Add Parent"),
+          title: Text(context.loc.add_parent),
         ),
         body: SafeArea(
           child: SingleChildScrollView(

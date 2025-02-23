@@ -30,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: const Text("Add Teacher"),
+          title: Text(context.loc.add_teacher),
         ),
         body: SafeArea(
           child: SingleChildScrollView(

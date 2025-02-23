@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -193,14 +194,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: MediaQuery.of(context).size.width * .8,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    context
-                                        .read<auth.AuthCubit>()
-                                        .goToRegisterScreen();
+                                    launchUrl(Uri.parse(
+                                        'mailto:mahirbilquran9@gmail.com'));
                                   },
                                   style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                       foregroundColor: Colors.white),
-                                  child: Text(context.loc.register,
+                                  child: Text(context.loc.request_copy,
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold)),
                                 ),

@@ -39,7 +39,7 @@ class _SchoolScreenState extends State<SchoolScreen> {
         (context.read<SchoolCubit>().state as SchoolLoaded).school.id;
 
     _adminFuture = SchoolService.fetchSchoolAdmin(schoolId);
-    if (user.role == UserRole.parent) {
+    if (user.role != UserRole.parent) {
       _teacherCount = UsersService.countUsersBySchool(schoolId);
       _studentCount = StudentService.countStudentsBySchool(schoolId);
       _parentCount = ParentService.countParentsBySchool(schoolId);

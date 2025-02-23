@@ -1,6 +1,7 @@
 import 'package:al_furqan/application/services/asset_service.dart';
 import 'package:al_furqan/application/services/school_service.dart';
 import 'package:al_furqan/models/schools.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,6 +23,7 @@ class SchoolCubit extends HydratedCubit<SchoolState> {
   }
 
   void resetState() {
+    CachedNetworkImage.evictFromCache('logo');
     emit(SchoolInitial());
   }
 

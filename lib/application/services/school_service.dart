@@ -38,6 +38,19 @@ class SchoolService {
     }
   }
 
+  static Future<bool> getActivation(String schoolId) async {
+    try {
+      return (await db
+          .from('schools')
+          .select('activation')
+          .match({'id': schoolId})
+          .limit(1)
+          .single())['activation'];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   static Future<Users> fetchSchoolAdmin(String schoolId) async {
     try {
       final school = await db

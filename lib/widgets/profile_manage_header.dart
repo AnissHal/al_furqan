@@ -175,18 +175,21 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                               style: Theme.of(context).textTheme.headlineSmall,
                             ),
                             const SizedBox(height: 8),
-                            Row(children: [
-                              Expanded(
-                                child: Text(context.loc.phone,
-                                    style:
-                                        Theme.of(context).textTheme.bodyLarge),
-                              ),
-                              Expanded(
-                                child: Text(state.user.phone!,
-                                    style:
-                                        Theme.of(context).textTheme.bodyLarge),
-                              ),
-                            ]),
+                            if (state.user.phone != null)
+                              Row(children: [
+                                Expanded(
+                                  child: Text(context.loc.phone,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge),
+                                ),
+                                Expanded(
+                                  child: Text(state.user.phone!,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge),
+                                ),
+                              ]),
                             const SizedBox(height: 8),
                           ],
                         ),

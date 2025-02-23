@@ -7,7 +7,9 @@ import 'package:al_furqan/application/theme/theme_cubit.dart';
 import 'package:al_furqan/firebase_options.dart';
 import 'package:al_furqan/utils.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -31,17 +33,17 @@ void main() async {
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: await getApplicationDocumentsDirectory(),
   );
-
-  // add crashlytics reporting
-  // await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
-  // FlutterError.onError = (errorDetails) {
-  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  // };
-  // // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-  // PlatformDispatcher.instance.onError = (error, stack) {
-  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-  //   return true;
-  // };
+  if (!kDebugMode) {
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
   await findSystemLocale();
   runApp(const MyApp());
 }
@@ -57,8 +59,7 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (context) => ThemeCubit()),
           BlocProvider(create: (context) => StudentCubit()),
           BlocProvider(create: (context) => SchoolCubit()),
-          if (isTest)
-            BlocProvider(create: (context) => ActivationCubit()..listen()),
+          BlocProvider(create: (context) => ActivationCubit()),
         ],
         child: BlocConsumer<ThemeCubit, ThemeState>(
           listener: (context, state) {},

@@ -8,4 +8,4 @@ extension AppLocalizationsX on BuildContext {
 }
 
 const serialId = "testtest";
-const isTest = false;
+const isTest = true;

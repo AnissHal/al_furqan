@@ -73,21 +73,35 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
             ),
             if (_userData != null)
               Center(
-                child: Container(
-                  width: MediaQuery.of(context).size.width * .3,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(),
-                      image: DecorationImage(
-                          scale: 2,
-                          fit: BoxFit.fill,
-                          image: CachedNetworkImageProvider(
-                              AssetService.fetchSchoolImageFromNetwork((context
-                                      .watch<SchoolCubit>()
-                                      .state as SchoolLoaded)
-                                  .school),
-                              cacheKey: 'logo'))),
+                child: BlocBuilder<SchoolCubit, SchoolState>(
+                  builder: (context, state) {
+                    return Container(
+                      width: MediaQuery.of(context).size.width * .3,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(),
+                          image: state is SchoolLoaded
+                              ? DecorationImage(
+                                  scale: 2,
+                                  fit: BoxFit.fill,
+                                  image: CachedNetworkImageProvider(
+                                      AssetService.fetchSchoolImageFromNetwork(
+                                          (context.watch<SchoolCubit>().state
+                                                  as SchoolLoaded)
+                                              .school),
+                                      cacheKey: 'logo'))
+                              : null),
+                      child: (state is SchoolLoaded &&
+                              (state).school.image == null)
+                          ? const Icon(
+                              Icons.school,
+                              size: 128,
+                              color: Colors.black,
+                            )
+                          : null,
+                    );
+                  },
                 ),
               ),
             const SizedBox.expand(),

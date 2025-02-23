@@ -1,3 +1,4 @@
+import 'package:al_furqan/application/activation/activation_cubit.dart';
 import 'package:al_furqan/application/auth/auth_cubit.dart';
 import 'package:al_furqan/application/profile/cubit/profile_cubit.dart';
 import 'package:al_furqan/application/school/cubit/school_cubit.dart';
@@ -38,11 +39,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final Users? userData =
         (context.read<AuthCubit>().state as UserAuthenticated).userData;
     _userData = userData;
+    context.read<SchoolCubit>().resetState();
+    context.read<ActivationCubit>().getActivation(_userData!.schoolId);
   }
 
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(
+      centerTitle: true,
       title: _userData != null
           ? BlocBuilder<SchoolCubit, SchoolState>(
               bloc: context.read<SchoolCubit>()
@@ -51,7 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (state is SchoolLoaded) {
                   return Text(
                     state.school.name,
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge!
+                        .copyWith(color: Colors.white),
                   );
                 }
                 return Shimmer.fromColors(
@@ -98,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               AssetService.composeImageURL(state.user))
                           : null,
                       backgroundColor:
-                          image == null && image!.isEmpty ? Colors.teal : null,
+                          (image == null || image.isEmpty) ? Colors.teal : null,
                       child: Text(
                           state.user.fullName.characters.first.toUpperCase(),
                           style: const TextStyle(
@@ -122,6 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
     );
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is UserAuthenticated) {
@@ -130,277 +138,355 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         }
       },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: appBar,
-        body: IndexedStack(
-          index: _currentPage,
-          children: [
-            Column(
-              children: [
-                if (_userData == null) ...[
-                  Expanded(
-                    child: Shimmer.fromColors(
-                        baseColor: Colors.grey.shade300,
-                        highlightColor: Colors.grey.shade100,
-                        child: HeaderPlaceholder(
-                          width: MediaQuery.of(context).size.width,
-                        )),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: ListView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        ...List.generate(
-                            5,
-                            (e) => Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Shimmer.fromColors(
-                                      baseColor: Colors.white24,
-                                      highlightColor: Colors.grey,
-                                      child: ListTilePlaceholder(
-                                        height: 70,
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                .9,
-                                      )),
-                                ))
-                      ],
-                    ),
-                  )
-                ] else ...[
-                  Expanded(
-                    child: ProfileHeader(
-                      user: _userData!,
-                      cubit: _profileCubit,
-                    ),
-                  ),
-                  Expanded(
-                      flex: 2,
-                      child: Column(
-                        children: [
-                          ListTile(
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => const PasswordDialog());
-                            },
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24)),
-                            tileColor:
-                                Theme.of(context).colorScheme.tertiaryContainer,
-                            leading: const Icon(Icons.password_outlined),
-                            title: Text(context.loc.password,
-                                style: Theme.of(context).textTheme.bodyLarge),
-                          ),
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          ListTile(
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => UserDialog(
-                                        user: _userData!,
-                                      )).then((_) {
-                                _profileCubit.loadProfile(_userData!);
-                              });
-                            },
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24)),
-                            tileColor:
-                                Theme.of(context).colorScheme.tertiaryContainer,
-                            leading: const Icon(Icons.account_box),
-                            title: Text(context.loc.update_user,
-                                style: Theme.of(context).textTheme.bodyLarge),
-                          ),
-                          const Spacer(),
-                          ListTile(
-                            onTap: () {
-                              context.read<AuthCubit>().logout().then((_) {
-                                context.read<SchoolCubit>().resetState();
-                              });
-                            },
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24)),
-                            tileColor: Theme.of(context)
-                                .colorScheme
-                                .secondaryContainer,
-                            leading: const Icon(Icons.logout),
-                            title: Text(context.loc.logout,
-                                style: Theme.of(context).textTheme.bodyLarge),
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                        ],
-                      )),
-                ]
-              ],
-            ),
-            Column(
-              children: [
-                const Expanded(child: HomeHeaderWidget()),
-                if (_userData == null) ...[
-                  Expanded(
-                    flex: 3,
-                    child: GridView.count(
-                      crossAxisCount: 3,
-                      children: [
-                        ...List.generate(
-                            9,
-                            (int index) => Shimmer.fromColors(
-                                baseColor: Theme.of(context)
-                                    .colorScheme
-                                    .primaryContainer,
-                                highlightColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                child: const CardPlaceholder(
-                                  width: 150,
-                                )))
-                      ],
-                    ),
-                  )
-                ] else ...[
-                  switch (_userData!.role) {
-                    UserRole.admin =>
-                      const Expanded(flex: 3, child: AdminDashboardGrid()),
-                    UserRole.parent =>
-                      const Expanded(flex: 3, child: ParentDashboardGrid()),
-                    UserRole.teacher =>
-                      const Expanded(flex: 3, child: TeacherDashboardGrid()),
-                    _ => const Expanded(flex: 3, child: AdminDashboardGrid()),
-                  }
-                ]
-              ],
-            ),
-            Column(
-              children: [
-                if (_userData == null) ...[
-                  Expanded(
-                    flex: 3,
-                    child: GridView.count(
-                      crossAxisCount: 3,
-                      children: [
-                        ...List.generate(
-                            9,
-                            (int index) => Shimmer.fromColors(
-                                baseColor: Theme.of(context)
-                                    .colorScheme
-                                    .primaryContainer,
-                                highlightColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                child: const CardPlaceholder(
-                                  width: 150,
-                                )))
-                      ],
-                    ),
-                  )
-                ] else ...[
-                  Expanded(
-                    child: Column(children: [
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: Text(context.loc.settings,
-                            style: Theme.of(context).textTheme.headlineSmall),
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      ListTile(
-                        onTap: () {
-                          context.read<ThemeCubit>().toggleTheme();
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24)),
-                        leading: context.watch<ThemeCubit>().state is ThemeLight
-                            ? const Icon(
-                                Icons.dark_mode,
-                                color: Colors.teal,
-                              )
-                            : const Icon(
-                                Icons.light_mode,
-                                color: Colors.amber,
-                              ),
-                        title: Text(
-                            context.watch<ThemeCubit>().state is ThemeLight
-                                ? context.loc.enable_dark_mode
-                                : context.loc.enable_light_mode,
-                            style: Theme.of(context).textTheme.bodyLarge),
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      const Spacer(),
-                      ListTile(
-                        onTap: () {
-                          launchUrl(Uri.parse("mailto:anisshal50@gmail.com"),
-                              mode: LaunchMode.externalApplication);
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24)),
-                        tileColor:
-                            Theme.of(context).colorScheme.tertiaryContainer,
-                        leading: const Icon(Icons.contact_support_outlined),
-                        title: Text(context.loc.contact_developer,
-                            style: Theme.of(context).textTheme.bodyLarge),
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                    ]),
-                  ),
-                ]
-              ],
-            ),
-          ],
-        ),
-        bottomNavigationBar: CurvedNavigationBar(
-            height: 50,
-            index: _currentPage,
-            onTap: (i) {
-              setState(() {
-                _currentPage = i;
-              });
-            },
-            animationDuration: const Duration(milliseconds: 250),
-            color: Theme.of(context).colorScheme.primary,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            items: [
-              if (_userData == null)
-                const SizedBox(
-                  height: 32,
-                  width: 32,
-                  child: Stack(
-                    fit: StackFit.expand,
+      child: BlocBuilder<ActivationCubit, ActivationState>(
+        builder: (context, state) {
+          if (state is ActivationValid) {
+            return Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: appBar,
+              body: IndexedStack(
+                index: _currentPage,
+                children: [
+                  Column(
                     children: [
-                      Icon(
+                      if (_userData == null) ...[
+                        Expanded(
+                          child: Shimmer.fromColors(
+                              baseColor: Colors.grey.shade300,
+                              highlightColor: Colors.grey.shade100,
+                              child: HeaderPlaceholder(
+                                width: MediaQuery.of(context).size.width,
+                              )),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: ListView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              ...List.generate(
+                                  5,
+                                  (e) => Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Shimmer.fromColors(
+                                            baseColor: Colors.white24,
+                                            highlightColor: Colors.grey,
+                                            child: ListTilePlaceholder(
+                                              height: 70,
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  .9,
+                                            )),
+                                      ))
+                            ],
+                          ),
+                        )
+                      ] else ...[
+                        Expanded(
+                          child: ProfileHeader(
+                            user: _userData!,
+                            cubit: _profileCubit,
+                          ),
+                        ),
+                        Expanded(
+                            flex: 2,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  onTap: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            const PasswordDialog());
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24)),
+                                  tileColor: Theme.of(context)
+                                      .colorScheme
+                                      .tertiaryContainer,
+                                  leading: const Icon(Icons.password_outlined),
+                                  title: Text(context.loc.password,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge),
+                                ),
+                                const SizedBox(
+                                  height: 12,
+                                ),
+                                ListTile(
+                                  onTap: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => UserDialog(
+                                              user: _userData!,
+                                            )).then((_) {
+                                      _profileCubit.loadProfile(_userData!);
+                                    });
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24)),
+                                  tileColor: Theme.of(context)
+                                      .colorScheme
+                                      .tertiaryContainer,
+                                  leading: const Icon(Icons.account_box),
+                                  title: Text(context.loc.update_user,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge),
+                                ),
+                                const Spacer(),
+                                ListTile(
+                                  onTap: () {
+                                    context
+                                        .read<AuthCubit>()
+                                        .logout()
+                                        .then((_) {
+                                      context.read<SchoolCubit>().resetState();
+                                    });
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24)),
+                                  tileColor: Theme.of(context)
+                                      .colorScheme
+                                      .secondaryContainer,
+                                  leading: const Icon(Icons.logout),
+                                  title: Text(context.loc.logout,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge),
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                              ],
+                            )),
+                      ]
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      const Expanded(child: HomeHeaderWidget()),
+                      if (_userData == null) ...[
+                        Expanded(
+                          flex: 3,
+                          child: GridView.count(
+                            crossAxisCount: 3,
+                            children: [
+                              ...List.generate(
+                                  9,
+                                  (int index) => Shimmer.fromColors(
+                                      baseColor: Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer,
+                                      highlightColor: Theme.of(context)
+                                          .colorScheme
+                                          .secondaryContainer,
+                                      child: const CardPlaceholder(
+                                        width: 150,
+                                      )))
+                            ],
+                          ),
+                        )
+                      ] else ...[
+                        switch (_userData!.role) {
+                          UserRole.admin => const Expanded(
+                              flex: 3, child: AdminDashboardGrid()),
+                          UserRole.parent => const Expanded(
+                              flex: 3, child: ParentDashboardGrid()),
+                          UserRole.teacher => const Expanded(
+                              flex: 3, child: TeacherDashboardGrid()),
+                          _ => const Expanded(
+                              flex: 3, child: AdminDashboardGrid()),
+                        }
+                      ]
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      if (_userData == null) ...[
+                        Expanded(
+                          flex: 3,
+                          child: GridView.count(
+                            crossAxisCount: 3,
+                            children: [
+                              ...List.generate(
+                                  9,
+                                  (int index) => Shimmer.fromColors(
+                                      baseColor: Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer,
+                                      highlightColor: Theme.of(context)
+                                          .colorScheme
+                                          .secondaryContainer,
+                                      child: const CardPlaceholder(
+                                        width: 150,
+                                      )))
+                            ],
+                          ),
+                        )
+                      ] else ...[
+                        Expanded(
+                          child: Column(children: [
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: Text(context.loc.settings,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            ListTile(
+                              onTap: () {
+                                context.read<ThemeCubit>().toggleTheme();
+                              },
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24)),
+                              leading: context.watch<ThemeCubit>().state
+                                      is ThemeLight
+                                  ? const Icon(
+                                      Icons.dark_mode,
+                                      color: Colors.teal,
+                                    )
+                                  : const Icon(
+                                      Icons.light_mode,
+                                      color: Colors.amber,
+                                    ),
+                              title: Text(
+                                  context.watch<ThemeCubit>().state
+                                          is ThemeLight
+                                      ? context.loc.enable_dark_mode
+                                      : context.loc.enable_light_mode,
+                                  style: Theme.of(context).textTheme.bodyLarge),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            const Spacer(),
+                            ListTile(
+                              onTap: () {
+                                launchUrl(
+                                    Uri.parse(
+                                        "https://sites.google.com/view/mahirbilquran/privacy-ar"),
+                                    mode: LaunchMode.externalApplication);
+                              },
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24)),
+                              tileColor: Theme.of(context)
+                                  .colorScheme
+                                  .tertiaryContainer,
+                              leading:
+                                  const Icon(Icons.contact_support_outlined),
+                              title: Text("سياسة الخصوصية والاستعمال",
+                                  style: Theme.of(context).textTheme.bodyLarge),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            ListTile(
+                              onTap: () {
+                                launchUrl(
+                                    Uri.parse(
+                                        "mailto:mahirbilquran9@gmail.com"),
+                                    mode: LaunchMode.externalApplication);
+                              },
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24)),
+                              tileColor: Theme.of(context)
+                                  .colorScheme
+                                  .tertiaryContainer,
+                              leading:
+                                  const Icon(Icons.contact_support_outlined),
+                              title: Text(context.loc.contact_developer,
+                                  style: Theme.of(context).textTheme.bodyLarge),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                          ]),
+                        ),
+                      ]
+                    ],
+                  ),
+                ],
+              ),
+              bottomNavigationBar: CurvedNavigationBar(
+                  height: 50,
+                  index: _currentPage,
+                  onTap: (i) {
+                    setState(() {
+                      _currentPage = i;
+                    });
+                  },
+                  animationDuration: const Duration(milliseconds: 250),
+                  color: Theme.of(context).colorScheme.primary,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  items: [
+                    if (_userData == null)
+                      const SizedBox(
+                        height: 32,
+                        width: 32,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                            CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          ],
+                        ),
+                      )
+                    else
+                      const Icon(
                         Icons.person,
                         color: Colors.white,
                       ),
-                      CircularProgressIndicator(
-                        color: Colors.white,
-                      )
-                    ],
+                    const Icon(
+                      Icons.home,
+                      color: Colors.white,
+                    ),
+                    const Icon(
+                      Icons.settings,
+                      color: Colors.white,
+                    )
+                  ]),
+            );
+          } else {
+            return Scaffold(
+              backgroundColor: Colors.white,
+              body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/logo_b.png'),
+                  Center(
+                      child: Text(
+                    context.loc.trial_version_expired,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
+                  )),
+                  ListTile(
+                    onTap: () {
+                      context.read<AuthCubit>().logout();
+                    },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24)),
+                    tileColor: Theme.of(context).colorScheme.primaryContainer,
+                    leading: const Icon(Icons.logout),
+                    title: Text(context.loc.logout,
+                        style: Theme.of(context).textTheme.bodyLarge),
                   ),
-                )
-              else
-                const Icon(
-                  Icons.person,
-                  color: Colors.white,
-                ),
-              const Icon(
-                Icons.home,
-                color: Colors.white,
+                ],
               ),
-              const Icon(
-                Icons.settings,
-                color: Colors.white,
-              )
-            ]),
+            );
+          }
+        },
       ),
     );
   }
