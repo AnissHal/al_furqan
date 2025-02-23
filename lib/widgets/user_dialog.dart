@@ -112,7 +112,7 @@ class _UserDialogState extends State<UserDialog> {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(
                               context.loc.has_been_modified_successfully)));
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(true);
                     }).catchError((_) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(context.loc.error_editing_user)));

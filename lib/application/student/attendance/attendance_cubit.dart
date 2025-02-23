@@ -20,10 +20,12 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         AttendanceService.streamAttendance(studentId).listen((attendances) {
       try {
         if (attendances.isEmpty) {
-          emit(const AttendanceLoaded(attendances: []));
+          emit(AttendanceLoaded(
+              attendances: const [], DateTime.now().toIso8601String()));
           return;
         }
-        emit(AttendanceLoaded(attendances: attendances));
+        emit(AttendanceLoaded(
+            attendances: attendances, DateTime.now().toIso8601String()));
       } catch (e) {
         emit(AttendanceError(message: e.toString()));
       }
@@ -34,20 +36,26 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     AttendanceService.getAttendance(studentId).then((attendances) {
       try {
         if (attendances.isEmpty) {
-          emit(const AttendanceLoaded(attendances: []));
+          emit(AttendanceLoaded(
+              attendances: const [], DateTime.now().toIso8601String()));
           return;
         }
-        emit(AttendanceLoaded(attendances: attendances));
+        emit(AttendanceLoaded(
+            attendances: attendances, DateTime.now().toIso8601String()));
       } catch (e) {
         emit(AttendanceError(message: e.toString()));
       }
     });
   }
 
-  void fetchAttendanceByDate(DateTime d) {
-    AttendanceService.fetchAttendanceByDate(d).then((v) {
-      emit(AttendanceLoaded(attendances: v));
-    });
+  Future<void> fetchAttendanceByDate(DateTime d) async {
+    try {
+      AttendanceService.fetchAttendanceByDate(d).then((v) {
+        emit(AttendanceLoaded(attendances: v, d.toIso8601String()));
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   getCalendarDataSource(List<Attendance> attendances) =>
@@ -72,15 +80,15 @@ class AttendanceCubit extends Cubit<AttendanceState> {
 
   Future<void> markAbsent(
           String studentId, String teacherId, DateTime date) async =>
-      addAttendance(studentId, teacherId, date, AttendanceStatus.absent);
+      await addAttendance(studentId, teacherId, date, AttendanceStatus.absent);
 
   Future<void> markPresent(
           String studentId, String teacherId, DateTime date) async =>
-      addAttendance(studentId, teacherId, date, AttendanceStatus.present);
+      await addAttendance(studentId, teacherId, date, AttendanceStatus.present);
 
   Future<void> markLate(
           String studentId, String teacherId, DateTime date) async =>
-      addAttendance(studentId, teacherId, date, AttendanceStatus.late);
+      await addAttendance(studentId, teacherId, date, AttendanceStatus.late);
 
   @override
   Future<void> close() {

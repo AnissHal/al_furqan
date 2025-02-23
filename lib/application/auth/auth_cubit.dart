@@ -1,3 +1,4 @@
+import 'package:al_furqan/application/school/cubit/school_cubit.dart';
 import 'package:al_furqan/application/services/users_service.dart';
 import 'package:al_furqan/models/parent.dart';
 import 'package:al_furqan/models/users.dart';
@@ -5,6 +6,7 @@ import 'package:al_furqan/utils.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -31,7 +33,8 @@ enum AuthError {
 
 class AuthCubit extends HydratedCubit<AuthState> {
   AuthCubit() : super(AuthNotAuthenticated(DateTime.timestamp().toString()));
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
+    context.read<SchoolCubit>().resetState();
     await Supabase.instance.client.auth.signOut();
     emit(AuthNotAuthenticated(DateTime.timestamp().toString()));
   }

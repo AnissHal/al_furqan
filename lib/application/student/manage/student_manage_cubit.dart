@@ -79,7 +79,7 @@ class StudentManageCubit extends Cubit<StudentManageState> {
     }
   }
 
-  void addQuran(QuranItem quran) async {
+  Future<void> addQuran(QuranItem quran) async {
     if (state is! StudentManageLoaded) return;
     final id = (state as StudentManageLoaded).student.id;
     try {
@@ -126,7 +126,7 @@ class StudentManageCubit extends Cubit<StudentManageState> {
           to: mutn.to,
           type: mutn.type,
           mark: mutn.note);
-      ProgressService.addProgress(progress);
+      await ProgressService.addProgress(progress);
     } catch (e) {
       rethrow;
     }
@@ -192,7 +192,7 @@ class StudentManageCubit extends Cubit<StudentManageState> {
     }
   }
 
-  void removeQuranItem(QuranItem item) async {
+  Future<void> removeQuranItem(QuranItem item) async {
     if (state is! StudentManageLoaded) return;
 
     try {
@@ -203,7 +203,7 @@ class StudentManageCubit extends Cubit<StudentManageState> {
     }
   }
 
-  void removeMutnItem(MutnItem item) async {
+  Future<void> removeMutnItem(MutnItem item) async {
     if (state is! StudentManageLoaded) return;
 
     try {

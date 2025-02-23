@@ -106,8 +106,11 @@ class _TeacherViewManageState extends State<TeacherViewManage> {
           return Column(
             children: [
               Expanded(
-                  child: HeaderPlaceholder(
-                      width: MediaQuery.of(context).size.width)),
+                  child: Shimmer.fromColors(
+                      baseColor: Colors.grey.shade300,
+                      highlightColor: Colors.grey.shade100,
+                      child: HeaderPlaceholder(
+                          width: MediaQuery.of(context).size.width))),
               Expanded(
                 child: ListView.builder(
                   physics: const NeverScrollableScrollPhysics(),

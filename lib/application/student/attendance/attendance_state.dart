@@ -11,10 +11,11 @@ final class AttendanceInitial extends AttendanceState {}
 
 final class AttendanceLoaded extends AttendanceState {
   final List<Attendance> attendances;
-  const AttendanceLoaded({required this.attendances});
+  final String currentDate;
+  const AttendanceLoaded(this.currentDate, {required this.attendances});
 
   @override
-  List<Object> get props => [attendances];
+  List<Object> get props => [attendances, currentDate];
 }
 
 final class AttendanceError extends AttendanceState {

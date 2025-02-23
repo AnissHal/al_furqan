@@ -14,9 +14,10 @@ class StudentAttendanceTile extends StatefulWidget {
   final Student student;
   final Attendance? attendance;
   final Function? onChange;
+  final DateTime selectedDate;
 
   const StudentAttendanceTile(this.student,
-      {super.key, this.attendance, this.onChange});
+      {super.key, this.attendance, this.onChange, required this.selectedDate});
 
   @override
   State<StudentAttendanceTile> createState() => _StudentAttendanceTileState();
@@ -60,17 +61,22 @@ class _StudentAttendanceTileState extends State<StudentAttendanceTile> {
                           widget.attendance!.status == AttendanceStatus.absent)
                       ? () {
                           _attendanceCubit
-                              .removeAttendance(widget.attendance!.id);
-                          if (widget.onChange != null) {
-                            widget.onChange!();
-                          }
+                              .removeAttendance(widget.attendance!.id)
+                              .then((_) {
+                            if (widget.onChange != null) {
+                              widget.onChange!();
+                            }
+                          });
                         }
                       : () {
-                          _attendanceCubit.markAbsent(
-                              widget.student.id, user.id, DateTime.now());
-                          if (widget.onChange != null) {
-                            widget.onChange!();
-                          }
+                          _attendanceCubit
+                              .markAbsent(widget.student.id, user.id,
+                                  widget.selectedDate)
+                              .then((_) {
+                            if (widget.onChange != null) {
+                              widget.onChange!();
+                            }
+                          });
                         },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: (widget.attendance != null &&
@@ -91,17 +97,22 @@ class _StudentAttendanceTileState extends State<StudentAttendanceTile> {
                           widget.attendance!.status == AttendanceStatus.present)
                       ? () {
                           _attendanceCubit
-                              .removeAttendance(widget.attendance!.id);
-                          if (widget.onChange != null) {
-                            widget.onChange!();
-                          }
+                              .removeAttendance(widget.attendance!.id)
+                              .then((_) {
+                            if (widget.onChange != null) {
+                              widget.onChange!();
+                            }
+                          });
                         }
                       : () {
-                          _attendanceCubit.markPresent(
-                              widget.student.id, user.id, DateTime.now());
-                          if (widget.onChange != null) {
-                            widget.onChange!();
-                          }
+                          _attendanceCubit
+                              .markPresent(widget.student.id, user.id,
+                                  widget.selectedDate)
+                              .then((_) {
+                            if (widget.onChange != null) {
+                              widget.onChange!();
+                            }
+                          });
                         },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: (widget.attendance != null &&
@@ -122,17 +133,22 @@ class _StudentAttendanceTileState extends State<StudentAttendanceTile> {
                           widget.attendance!.status == AttendanceStatus.late)
                       ? () {
                           _attendanceCubit
-                              .removeAttendance(widget.attendance!.id);
-                          if (widget.onChange != null) {
-                            widget.onChange!();
-                          }
+                              .removeAttendance(widget.attendance!.id)
+                              .then((_) {
+                            if (widget.onChange != null) {
+                              widget.onChange!();
+                            }
+                          });
                         }
                       : () {
-                          _attendanceCubit.markLate(
-                              widget.student.id, user.id, DateTime.now());
-                          if (widget.onChange != null) {
-                            widget.onChange!();
-                          }
+                          _attendanceCubit
+                              .markLate(widget.student.id, user.id,
+                                  widget.selectedDate)
+                              .then((_) {
+                            if (widget.onChange != null) {
+                              widget.onChange!();
+                            }
+                          });
                         },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: (widget.attendance != null &&
@@ -152,10 +168,12 @@ class _StudentAttendanceTileState extends State<StudentAttendanceTile> {
                   onTap: (widget.attendance != null)
                       ? () {
                           _attendanceCubit
-                              .removeAttendance(widget.attendance!.id);
-                          if (widget.onChange != null) {
-                            widget.onChange!();
-                          }
+                              .removeAttendance(widget.attendance!.id)
+                              .then((_) {
+                            if (widget.onChange != null) {
+                              widget.onChange!();
+                            }
+                          });
                         }
                       : null,
                   child: CircleAvatar(

@@ -77,7 +77,9 @@ class _ParentAddViewState extends State<ParentAddView> {
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                          color: Colors.grey[200], // Li
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .tertiaryContainer, // Li
                                           borderRadius: const BorderRadius.all(
                                               Radius.circular(24))),
                                       child: TextFormField(
@@ -104,7 +106,9 @@ class _ParentAddViewState extends State<ParentAddView> {
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                          color: Colors.grey[200], // Li
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .tertiaryContainer, // Li
                                           borderRadius: const BorderRadius.all(
                                               Radius.circular(24))),
                                       child: TextFormField(
@@ -131,7 +135,9 @@ class _ParentAddViewState extends State<ParentAddView> {
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                          color: Colors.grey[200], // Li
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .tertiaryContainer, // Li
                                           borderRadius: const BorderRadius.all(
                                               Radius.circular(24))),
                                       child: TextFormField(
@@ -158,7 +164,9 @@ class _ParentAddViewState extends State<ParentAddView> {
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                          color: Colors.grey[200], // Li
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .tertiaryContainer, // Li
                                           borderRadius: const BorderRadius.all(
                                               Radius.circular(24))),
                                       child: TextFormField(

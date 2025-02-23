@@ -51,7 +51,9 @@ class Student extends Equatable {
       encouragement: json['encouragement'] != null
           ? Encouragement.fromString(json['encouragement'])
           : null,
-      mark: json['mark'],
+      mark: json['mark'].runtimeType == int
+          ? (json['mark'] as int).toDouble()
+          : json['mark'],
       schoolId: json['school_id'],
       requested: json['requested'] ?? false,
       createdAt: DateTime.parse(json['created_at']),

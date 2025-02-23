@@ -100,6 +100,10 @@ class StudentCubit extends Cubit<StudentState> {
     }
   }
 
+  void closeStream() {
+    _stream?.cancel();
+  }
+
   @override
   Future<void> close() async {
     _stream?.cancel();

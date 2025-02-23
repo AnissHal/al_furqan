@@ -364,7 +364,11 @@ class _SchoolScreenState extends State<SchoolScreen> {
                 )
               ]);
             }
-            return HeaderPlaceholder(width: MediaQuery.of(context).size.width);
+            return Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: HeaderPlaceholder(
+                    width: MediaQuery.of(context).size.width));
           },
         ));
   }

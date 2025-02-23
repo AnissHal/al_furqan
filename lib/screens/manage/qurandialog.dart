@@ -72,7 +72,7 @@ class _QuranDialogState extends State<QuranDialog> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  context.loc.from_surah,
+                  context.loc.surah,
                   style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.onSurface),
@@ -460,7 +460,8 @@ class _QuranDialogState extends State<QuranDialog> {
                       final note = double.parse(
                           _noteController.text.replaceAll(",", "."));
 
-                      manageCubit.addQuran(
+                      manageCubit
+                          .addQuran(
                         QuranItem(
                             type: selectedQuranItemType!,
                             fromQuranStatus: selectedFromQuranStatus!,
@@ -468,11 +469,14 @@ class _QuranDialogState extends State<QuranDialog> {
                             // toQuranStatus: selectedToQuranStatus!,
                             toAyah: toayah,
                             note: note),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(context.loc.has_been_added_successfully),
-                      ));
-                      Navigator.of(context).pop();
+                      )
+                          .then((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text(context.loc.has_been_added_successfully),
+                        ));
+                        Navigator.of(context).pop();
+                      });
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -533,14 +537,18 @@ class _QuranDialogState extends State<QuranDialog> {
                       child: ElevatedButton(
                         onPressed: () {
                           if (_quranKey.currentState!.validate()) {
-                            manageCubit.removeQuranItem(
+                            manageCubit
+                                .removeQuranItem(
                               widget.item!,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  context.loc.has_been_deleted_successfully),
-                            ));
-                            Navigator.of(context).pop();
+                            )
+                                .then((_) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text(
+                                    context.loc.has_been_deleted_successfully),
+                              ));
+                              Navigator.of(context).pop();
+                            });
                           }
                         },
                         style: ElevatedButton.styleFrom(

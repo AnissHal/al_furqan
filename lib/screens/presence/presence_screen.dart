@@ -109,7 +109,28 @@ class _StudentListScreenState extends State<PresenceScreen> {
                                 ),
                               ],
                             ),
-                          StudentError() => Center(child: Text(state.message)),
+                          StudentError() => RefreshIndicator(
+                              onRefresh: () async {
+                                if (_user.role == UserRole.parent) {
+                                  _cubit.studentByParent(_user.id);
+                                } else {
+                                  _cubit.getStudentsByTeacher((_user.id));
+                                }
+                              },
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.height * .8,
+                                child: SingleChildScrollView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Center(child: Text(state.message)),
+                                      ],
+                                    )),
+                              )),
                           _ => Expanded(
                               child: ListView(children: [
                                 ...List.generate(
@@ -156,8 +177,10 @@ class _StudentListWidgetState extends State<StudentListWidget> {
   DateTime _selectedDate = DateTime.now();
   late Users _user;
   final _attendanceCubit = AttendanceCubit();
+  bool _loading = true;
 
   Timer? _debounce;
+  Timer? _fetchDebounce;
 
   @override
   void initState() {
@@ -195,119 +218,170 @@ class _StudentListWidgetState extends State<StudentListWidget> {
   void _onDateChange(DateTime d) {
     setState(() {
       _selectedDate = d;
+      _loading = true;
     });
-    _attendanceCubit.fetchAttendanceByDate(d);
+    if (_fetchDebounce?.isActive ?? false) _fetchDebounce!.cancel();
+    _fetchDebounce = Timer(const Duration(milliseconds: 300), () {
+      _attendanceCubit.fetchAttendanceByDate(d);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            IconButton(
-                onPressed: () {
-                  _onDateChange(_selectedDate.add(const Duration(days: 1)));
-                },
-                icon: const Icon(Icons.arrow_back)),
-            Expanded(
-              child: DateTimeFormField(
-                initialValue: _selectedDate,
-                mode: DateTimeFieldPickerMode.date,
-                dateFormat: DateFormat('EEEE dd MMMM yyyy', 'ar-DZ'),
-                canClear: false,
-                onChanged: (d) {
-                  if (d == null) return;
-                  _onDateChange(d);
-                },
+    return BlocListener<AttendanceCubit, AttendanceState>(
+      bloc: _attendanceCubit,
+      listener: (context, state) {
+        if (state is AttendanceLoaded) {
+          WidgetsBinding.instance.addPostFrameCallback((timestamp) {
+            setState(() {
+              _loading = false;
+            });
+          });
+        }
+      },
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                  onPressed: () {
+                    _onDateChange(_selectedDate.add(const Duration(days: 1)));
+                  },
+                  icon: const Icon(Icons.arrow_back)),
+              Expanded(
+                child: DateTimeFormField(
+                  initialValue: _selectedDate,
+                  mode: DateTimeFieldPickerMode.date,
+                  dateFormat: DateFormat('EEEE dd MMMM yyyy', 'ar-DZ'),
+                  canClear: false,
+                  onChanged: (d) {
+                    if (d == null) return;
+                    _onDateChange(d);
+                  },
+                  decoration: InputDecoration(
+                    hintStyle: const TextStyle(color: Colors.black87),
+                    hintText: context.loc.date,
+                    prefixIcon:
+                        const Icon(Icons.date_range, color: Colors.black87),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2026),
+                ),
+              ),
+              IconButton(
+                  onPressed: () {
+                    _onDateChange(
+                        _selectedDate.subtract(const Duration(days: 1)));
+                  },
+                  icon: const Icon(Icons.arrow_forward)),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200], // Light grey background
+                borderRadius: BorderRadius.circular(30), // Rounded edges
+              ),
+              child: TextFormField(
+                controller: _controller,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium!
+                    .copyWith(color: Colors.black),
                 decoration: InputDecoration(
                   hintStyle: const TextStyle(color: Colors.black87),
-                  hintText: context.loc.date,
-                  prefixIcon:
-                      const Icon(Icons.date_range, color: Colors.black87),
+                  hintText: context.loc.search_student,
+                  prefixIcon: const Icon(Icons.search, color: Colors.black87),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                firstDate: DateTime(2020),
-                lastDate: DateTime(2026),
-              ),
-            ),
-            IconButton(
-                onPressed: () {
-                  _onDateChange(
-                      _selectedDate.subtract(const Duration(days: 1)));
-                },
-                icon: const Icon(Icons.arrow_forward)),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[200], // Light grey background
-              borderRadius: BorderRadius.circular(30), // Rounded edges
-            ),
-            child: TextFormField(
-              controller: _controller,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(color: Colors.black),
-              decoration: InputDecoration(
-                hintStyle: const TextStyle(color: Colors.black87),
-                hintText: context.loc.search_student,
-                prefixIcon: const Icon(Icons.search, color: Colors.black87),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-              itemCount: _controller.text.isNotEmpty
-                  ? filtredStudents.length
-                  : widget.students.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                final student = _controller.text.isNotEmpty
-                    ? filtredStudents[index]
-                    : widget.students[index];
-                return BlocBuilder<AttendanceCubit, AttendanceState>(
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async =>
+                  _attendanceCubit.fetchAttendanceByDate(_selectedDate),
+              child: BlocBuilder<AttendanceCubit, AttendanceState>(
                   bloc: _attendanceCubit,
                   builder: (context, state) {
                     if (state is AttendanceLoaded) {
-                      final attendance = state.attendances
-                          .where((e) => e.studentId == student.id);
+                      return ListView.builder(
+                          itemCount: _controller.text.isNotEmpty
+                              ? filtredStudents.length
+                              : widget.students.length,
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) {
+                            final student = _controller.text.isNotEmpty
+                                ? filtredStudents[index]
+                                : widget.students[index];
 
-                      return _user.role == UserRole.parent
-                          ? ParentAttendanceTile(
-                              student,
-                              attendance: attendance.firstOrNull,
-                              onChange: () {
-                                Future.delayed(const Duration(seconds: 1), () {
-                                  _attendanceCubit
-                                      .fetchAttendanceByDate(_selectedDate);
-                                });
-                              },
-                            )
-                          : StudentAttendanceTile(
-                              student,
-                              attendance: attendance.firstOrNull,
-                              onChange: () {
-                                Future.delayed(const Duration(seconds: 1), () {
-                                  _attendanceCubit
-                                      .fetchAttendanceByDate(_selectedDate);
-                                });
-                              },
-                            );
+                            final attendance = state.attendances
+                                .where((e) => e.studentId == student.id);
+
+                            if (_loading) {
+                              return ListView(shrinkWrap: true, children: [
+                                ...List.generate(
+                                    8,
+                                    (e) => Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Shimmer.fromColors(
+                                              baseColor: Colors.white24,
+                                              highlightColor: Colors.grey,
+                                              child: const ListTilePlaceholder(
+                                                width: 250,
+                                              )),
+                                        ))
+                              ]);
+                            } else {
+                              return _user.role == UserRole.parent
+                                  ? ParentAttendanceTile(
+                                      student,
+                                      attendance: attendance.firstOrNull,
+                                      onChange: () {
+                                        Future.delayed(
+                                            const Duration(milliseconds: 250),
+                                            () {
+                                          _attendanceCubit
+                                              .fetchAttendanceByDate(
+                                                  _selectedDate);
+                                        });
+                                      },
+                                    )
+                                  : StudentAttendanceTile(
+                                      student,
+                                      selectedDate: _selectedDate,
+                                      attendance: attendance.firstOrNull,
+                                      onChange: () {
+                                        _attendanceCubit.fetchAttendanceByDate(
+                                            _selectedDate);
+                                      },
+                                    );
+                            }
+                          });
+                    } else {
+                      return ListView(shrinkWrap: true, children: [
+                        ...List.generate(
+                            8,
+                            (e) => Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Shimmer.fromColors(
+                                      baseColor: Colors.white24,
+                                      highlightColor: Colors.grey,
+                                      child: const ListTilePlaceholder(
+                                        width: 250,
+                                      )),
+                                ))
+                      ]);
                     }
-                    return ParentAttendanceTile(student);
-                  },
-                );
-              }),
-        ),
-      ],
+                  }),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -146,8 +146,11 @@ class _MutnPageState extends State<MutnPage> {
               onTap: () async {
                 // showdialog
                 showDialog(
-                    context: context,
-                    builder: (context) => MutnDialog(cubit: manageCubit));
+                        context: context,
+                        builder: (context) => MutnDialog(cubit: manageCubit))
+                    .then((_) {
+                  manageCubit.refreshProgression();
+                });
               },
               child: CircleAvatar(
                 radius: 28,
@@ -179,6 +182,7 @@ class MutnDataSource extends DataTableSource {
               builder: (context) => MutnDialog(
                     cubit: manageCubit,
                     item: data[index],
+                    index: index,
                   )).then((_) {
             manageCubit.refreshProgression();
           });

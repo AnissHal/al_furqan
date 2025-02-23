@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       .colorScheme
                                       .tertiaryContainer,
                                   leading: const Icon(Icons.password_outlined),
-                                  title: Text(context.loc.password,
+                                  title: Text(context.loc.change_password,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge),
@@ -215,12 +215,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 ListTile(
                                   onTap: () {
-                                    showDialog(
+                                    showDialog<bool?>(
                                         context: context,
                                         builder: (context) => UserDialog(
                                               user: _userData!,
-                                            )).then((_) {
-                                      _profileCubit.loadProfile(_userData!);
+                                            )).then((b) {
+                                      if (b == true) {
+                                        _profileCubit.loadProfile(_userData!);
+                                      }
                                     });
                                   },
                                   shape: RoundedRectangleBorder(
@@ -237,12 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const Spacer(),
                                 ListTile(
                                   onTap: () {
-                                    context
-                                        .read<AuthCubit>()
-                                        .logout()
-                                        .then((_) {
-                                      context.read<SchoolCubit>().resetState();
-                                    });
+                                    context.read<AuthCubit>().logout(context);
                                   },
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(24)),
@@ -473,7 +470,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   )),
                   ListTile(
                     onTap: () {
-                      context.read<AuthCubit>().logout();
+                      context.read<AuthCubit>().logout(context);
                     },
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
@@ -513,10 +510,12 @@ class TitlePlaceholder extends StatelessWidget {
 
 class CardPlaceholder extends StatelessWidget {
   final double width;
+  final double? height;
 
   const CardPlaceholder({
     super.key,
     required this.width,
+    this.height,
   });
 
   @override
@@ -525,7 +524,7 @@ class CardPlaceholder extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
       child: Container(
         width: width,
-        height: 12.0,
+        height: height ?? 12.0,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(24),

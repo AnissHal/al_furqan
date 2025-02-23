@@ -19,6 +19,7 @@ class SchoolCubit extends HydratedCubit<SchoolState> {
 
   Future<void> refreshSchool(String id) async {
     final school = await SchoolService.fetchSchool(id);
+    CachedNetworkImage.evictFromCache('logo');
     emit(SchoolLoaded(school: school));
   }
 

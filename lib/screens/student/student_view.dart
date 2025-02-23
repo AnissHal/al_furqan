@@ -223,7 +223,7 @@ class _StudentViewState extends State<StudentView> {
                                     children: [
                                       Text(context.loc.mark),
                                       Text(
-                                        "${state.student.mark}/20",
+                                        "${state.student.mark.toString()}/20",
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium!

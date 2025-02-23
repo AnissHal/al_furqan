@@ -67,7 +67,7 @@ class _MutnDialogState extends State<MutnDialog> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  context.loc.from_mutn,
+                  context.loc.mutn,
                   style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.onSurface),
@@ -459,14 +459,18 @@ class _MutnDialogState extends State<MutnDialog> {
                       child: ElevatedButton(
                         onPressed: () {
                           if (_mutnKey.currentState!.validate()) {
-                            manageCubit.removeMutnItem(
+                            manageCubit
+                                .removeMutnItem(
                               widget.item!,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  context.loc.has_been_deleted_successfully),
-                            ));
-                            Navigator.of(context).pop();
+                            )
+                                .then((_) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text(
+                                    context.loc.has_been_deleted_successfully),
+                              ));
+                              Navigator.of(context).pop();
+                            });
                           }
                         },
                         style: ElevatedButton.styleFrom(

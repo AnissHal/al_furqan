@@ -245,14 +245,19 @@ class _StudentManageHeaderState extends State<StudentManageHeader> {
                                               const SizedBox(
                                                 width: 8,
                                               ),
-                                              CircleAvatar(
-                                                foregroundImage:
-                                                    CachedNetworkImageProvider(
-                                                        AssetService
-                                                            .composeImageURL(
-                                                                snapshot
-                                                                    .data!)),
-                                              ),
+                                              if (snapshot.data!.image != null)
+                                                CircleAvatar(
+                                                    foregroundImage:
+                                                        CachedNetworkImageProvider(
+                                                            AssetService
+                                                                .composeImageURL(
+                                                                    snapshot
+                                                                        .data!)))
+                                              else
+                                                const CircleAvatar(
+                                                  backgroundColor: Colors.teal,
+                                                  child: Icon(Icons.person),
+                                                ),
                                             ],
                                           ),
                                         ),
@@ -309,7 +314,7 @@ class _StudentManageHeaderState extends State<StudentManageHeader> {
                                               Radius.circular(24))),
                                       child: Row(children: [
                                         Expanded(
-                                          child: Text(context.loc.teachers,
+                                          child: Text(context.loc.teacher,
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodyLarge),
