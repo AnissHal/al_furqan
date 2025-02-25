@@ -1,6 +1,7 @@
 import 'package:al_furqan/application/auth/auth_cubit.dart';
 import 'package:al_furqan/application/student/crud/student_cubit.dart';
 import 'package:al_furqan/models/users.dart';
+import 'package:al_furqan/screens/file/file_screen.dart';
 import 'package:al_furqan/screens/parent/parent_manage.dart';
 import 'package:al_furqan/screens/presence/presence_screen.dart';
 import 'package:al_furqan/screens/school_screen.dart';
@@ -179,6 +180,33 @@ class _AdminDashboardGridState extends State<AdminDashboardGrid> {
                           )),
                           Text(
                             context.loc.attendance,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const FileScreen()));
+                    },
+                    child: Card.filled(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset('assets/ui/file.png'),
+                          )),
+                          Text(
+                            context.loc.files,
                             style: Theme.of(context).textTheme.bodyLarge,
                           ),
                         ],

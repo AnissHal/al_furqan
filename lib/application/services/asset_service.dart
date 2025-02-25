@@ -1,12 +1,17 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:al_furqan/models/file.dart';
 import 'package:al_furqan/models/schools.dart';
 import 'package:al_furqan/models/student.dart';
 import 'package:al_furqan/models/users.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/v4.dart';
 
 class AssetService {
   static final db = Supabase.instance.client;
@@ -17,6 +22,96 @@ class AssetService {
       final path = '${school.id}/${school.image}';
       final res = db.storage.from('pictures').getPublicUrl(path);
       return res;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<List<StorageFile>> fetchFiles(String schoolId) async {
+    try {
+      return (await db.from('files').select().match({'school_id': schoolId}))
+          .map((e) => StorageFile.fromJson(e))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<String> uploadFile(
+      PlatformFile file, String name, Users user) async {
+    try {
+      final adminSchoolId = user.schoolId;
+      final fileName = '$name.${file.extension.toString()}';
+      final pathUpload = '$adminSchoolId/$fileName';
+      await db.storage.from('files').upload(
+            pathUpload,
+            File(file.path!),
+            fileOptions: const FileOptions(cacheControl: '3600'),
+          );
+
+      final storageFile = StorageFile(
+          name: fileName,
+          schoolId: adminSchoolId,
+          id: const UuidV4().generate(),
+          createdAt: DateTime.now());
+      await db.from('files').insert(storageFile.toJson());
+      final publicUrl = db.storage.from('files').getPublicUrl(pathUpload);
+      return publicUrl;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<Uint8List> downloadFile(String name, String schoolId) async {
+    try {
+      final pathUpload = '$schoolId/$name';
+
+      Uint8List data;
+      final cache = await DefaultCacheManager().getFileFromCache(pathUpload);
+      if (cache == null) {
+        final upload = await db.storage.from('files').download(
+              pathUpload,
+            );
+        await DefaultCacheManager().putFile(pathUpload, upload);
+
+        data = upload;
+      } else {
+        data = cache.file.readAsBytesSync();
+      }
+
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<void> deleteFile(
+      {required String name, required String schoolId}) async {
+    try {
+      final pathUpload = '$schoolId/$name';
+      print(pathUpload);
+
+      await db.storage.from('files').remove([
+        pathUpload,
+      ]);
+      await db
+          .from('files')
+          .delete()
+          .match({'name': name, 'school_id': schoolId});
+      final cache = await DefaultCacheManager().getFileFromCache(pathUpload);
+      if (cache != null) {
+        await DefaultCacheManager().removeFile(pathUpload);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static String composeFileUrl(StorageFile file) {
+    try {
+      return db.storage
+          .from('files')
+          .getPublicUrl('${file.schoolId}/${file.name}');
     } catch (e) {
       rethrow;
     }

@@ -157,7 +157,6 @@ class _ParentAddViewState extends State<ParentAddView> {
                                           icon: const Icon(Icons.person),
                                           labelText: context.loc.full_name,
                                         ),
-                                        obscureText: true,
                                       ),
                                     ),
                                     const SizedBox(height: 8),

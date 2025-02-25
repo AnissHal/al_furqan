@@ -101,6 +101,7 @@ class _UserDialogState extends State<UserDialog> {
                     });
 
                     UsersService.modifyUserThroughEdge(
+                      username: userNameKey.currentState!.value,
                       userId: widget.user.id,
                       fullName: fullNameKey.currentState!.value,
                       password:
