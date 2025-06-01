@@ -1,0 +1,43 @@
+name: Flutter Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Flutter 3.22.1
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.1'
+        channel: 'stable'
+        cache: true
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    #- name: Analyze Dart code
+     # run: flutter analyze
+
+    #- name: Run tests
+   #   run: flutter test
+
+    - name: Build APK
+      run: flutter build apk --release
+
+    # Optional: build appbundle
+ #   - name: Build AAB
+  #    run: flutter build appbundle --release
+
+    # Optional: iOS build (only runs on macOS)
+    # - name: Build iOS
+    #   if: runner.os == 'macOS'
+    #   run: flutter build ios --release
