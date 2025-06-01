@@ -9,7 +9,7 @@ import 'package:al_furqan/screens/admin/dashboard.dart';
 import 'package:al_furqan/screens/parent/dashboard.dart';
 import 'package:al_furqan/screens/teacher/dashboard.dart';
 import 'package:al_furqan/utils.dart';
-import 'package:al_furqan/widgets/Profile_manage_header.dart';
+import 'package:al_furqan/widgets/profile_manage_header.dart';
 import 'package:al_furqan/widgets/home_header.dart';
 import 'package:al_furqan/widgets/password_dialog.dart';
 import 'package:al_furqan/widgets/user_dialog.dart';
